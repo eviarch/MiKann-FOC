@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "Display.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint32_t last_display_time = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,7 +92,7 @@ int main(void)
   MX_I2C2_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  Display_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -100,7 +100,14 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+    uint32_t now = HAL_GetTick();
 
+    // 每 100 ms 执行一次
+    if (now - last_display_time >= 100)
+    {
+        last_display_time = now;
+        Display_Task();
+    }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
