@@ -9,6 +9,7 @@
  * 
  */
 #include "Page_Main.h"
+#include "AS5600.h"
 
 
 // 主页面中的功能选择指针。0 - 当前显示封面。
@@ -54,7 +55,7 @@ void Page_Main_Task(void)
 {
     if (Page_Main_Ptr == 0)
     {
-        ;
+        OLED_ShowNum(2, 1, (int)encoder_degree, 4, FILL_BY_0);
     }
     else
     {

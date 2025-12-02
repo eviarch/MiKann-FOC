@@ -8,6 +8,7 @@ srcDirs:
   - Core
   - Display
   - User
+  - Encoder
 virtualFolder:
   name: <virtual_root>
   files: []
@@ -32,6 +33,7 @@ targets:
         - Display/OLED
         - Display/Pages
         - User
+        - Encoder
       libList: []
     excludeList: []
     toolchain: GCC

@@ -2,7 +2,6 @@
 #define __OLED_H
 
 #include "main.h"
-#include "user_def.h"
 
 /*---------------------------------------------- User Configuration -----------------------------------------*/
 #define OLED_ADDR            (0x3C << 1)     // SSD1306 地址：0x3C 左移1位 = 0x78

@@ -1,5 +1,7 @@
 
 #include "task.h"
+#include "AS5600.h"
+#include "Display.h"
 
 volatile u8 TaskExeFlag = 0;
 
@@ -16,10 +18,12 @@ typedef struct
     void (*taskHook)(void);
 } Task_t;
 
-#define TASK_TOTAL      1
+#define TASK_TOTAL      3
 
 Task_t Task[TASK_TOTAL] =
 {
+    { 60, 0, AS5600_Update },
+    { 100, 0, Display_Task },
     { 1000, 0, led_task },
 };
 
