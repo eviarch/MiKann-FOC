@@ -9,6 +9,7 @@ srcDirs:
   - Display
   - User
   - Encoder
+  - Communication
 virtualFolder:
   name: <virtual_root>
   files: []
@@ -34,6 +35,7 @@ targets:
         - Display/Pages
         - User
         - Encoder
+        - Communication
       libList: []
     excludeList: []
     toolchain: GCC

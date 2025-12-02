@@ -96,9 +96,10 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  Display_Init();
-
   HAL_TIM_Base_Start_IT(&htim2);
+  
+  
+  Display_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */

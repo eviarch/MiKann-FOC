@@ -2,6 +2,7 @@
 #include "task.h"
 #include "AS5600.h"
 #include "Display.h"
+#include "Communication.h"
 
 volatile u8 TaskExeFlag = 0;
 
@@ -23,12 +24,14 @@ typedef struct
     void (*taskHook)(void);
 } Task_t;
 
-#define TASK_TOTAL      3
+#define TASK_TOTAL      4
 
 Task_t Task[TASK_TOTAL] =
 {
     { 60, 0, AS5600_Update },
+    { 60, 0, UART_Send_Task },
     { 100, 0, Display_Task },
+    
     { 1000, 0, count_task },
 };
 
