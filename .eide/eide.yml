@@ -10,6 +10,7 @@ srcDirs:
   - User
   - Encoder
   - Communication
+  - FOC
 virtualFolder:
   name: <virtual_root>
   files: []
@@ -36,6 +37,8 @@ targets:
         - User
         - Encoder
         - Communication
+        - FOC
+        - FOC/Math
       libList: []
     excludeList: []
     toolchain: GCC

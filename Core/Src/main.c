@@ -98,7 +98,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
   
-  
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+
+  // 设置占空比
+  // htim1.Instance->CCR1 = 0;
+
   Display_Init();
   /* USER CODE END 2 */
 

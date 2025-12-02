@@ -29,7 +29,7 @@ typedef struct
 Task_t Task[TASK_TOTAL] =
 {
     { 60, 0, AS5600_Update },
-    { 60, 0, UART_Send_Task },
+    // { 1000, 0, UART_Send_Task },
     { 100, 0, Display_Task },
     
     { 1000, 0, count_task },
