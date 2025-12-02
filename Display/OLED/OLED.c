@@ -11,7 +11,7 @@
 #define OLED_DISPGRAPH_SIZE             ((u16)(8 * 128))
 
 static uint8_t OLED_DispGraph[OLED_DISPGRAPH_SIZE];
-uint8_t OLED_IsInit = 0;      // <<< FIXED: replace BOOL with uint8_t
+BOOL OLED_IsInit = 0;      // <<< FIXED: replace BOOL with uint8_t
 
 /*---------------------------------------- Function Declarations --------------------------------*/
 
@@ -67,7 +67,7 @@ void OLED_Init(void)
 
     OLED_I2C_BlockWrite(OLED_CONTROLBYTE_CMD_STREAM, init, sizeof(init));
 
-    OLED_IsInit = 1;
+    OLED_IsInit = TRUE;
 }
 
 void OLED_Refresh(void)

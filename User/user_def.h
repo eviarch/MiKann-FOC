@@ -28,6 +28,7 @@ typedef uint32_t u32;
 typedef int8_t s8;
 typedef int16_t s16;
 typedef int32_t s32;
+typedef u8 BOOL;
 
 #define Bit_RESET       ((u32)(0))
 #define Bit_SET         ((u32)(1))
