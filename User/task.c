@@ -5,8 +5,13 @@
 
 volatile u8 TaskExeFlag = 0;
 
-void led_task(void)
+void count_task(void)
 {
+    display_num++;
+    if (display_num >= 100)
+    {
+        display_num = 0;
+    }
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 }
 
@@ -24,7 +29,7 @@ Task_t Task[TASK_TOTAL] =
 {
     { 60, 0, AS5600_Update },
     { 100, 0, Display_Task },
-    { 1000, 0, led_task },
+    { 1000, 0, count_task },
 };
 
 void TaskExe(void)

@@ -16,6 +16,8 @@
 // >0 : 表示指向 ShowState 中的具体功能。每一个功能都对应一个页面。
 u8 Page_Main_Ptr = 0;
 
+u8 display_num = 0;
+
 
 /*---------------------------------------------- User Determine -------------------------------------------*/
 
@@ -56,6 +58,7 @@ void Page_Main_Task(void)
     if (Page_Main_Ptr == 0)
     {
         OLED_ShowNum(2, 1, (int)encoder_degree, 4, FILL_BY_0);
+        OLED_ShowNum(1, 14, (int)display_num, 3, FILL_BY_0);
     }
     else
     {

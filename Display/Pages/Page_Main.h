@@ -9,6 +9,7 @@
 /*------------------------------- Exported Vars & Funcs -----------------------------*/
 
 extern u8 Page_Main_Ptr;
+extern u8 display_num;
 
 void Page_Main_Subtrate(void);
 void Page_Main_Task(void);

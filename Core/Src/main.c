@@ -47,7 +47,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t last_display_time = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
