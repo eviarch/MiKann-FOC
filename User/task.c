@@ -3,8 +3,19 @@
 #include "AS5600.h"
 #include "Display.h"
 #include "Communication.h"
+#include "FOC.h"
 
 volatile u8 TaskExeFlag = 0;
+volatile u32 time_now = 0;
+
+void time_task(void)
+{
+    time_now++;
+    if(time_now >= 60000)
+    {
+        time_now = 0;
+    }
+}
 
 void count_task(void)
 {
@@ -24,15 +35,17 @@ typedef struct
     void (*taskHook)(void);
 } Task_t;
 
-#define TASK_TOTAL      4
+#define TASK_TOTAL      5
 
 Task_t Task[TASK_TOTAL] =
 {
-    { 60, 0, AS5600_Update },
+    { 1, 0, time_task },
+    { 10, 0, FOC_Task },
+    { 600, 0, AS5600_Update },
     // { 1000, 0, UART_Send_Task },
-    { 100, 0, Display_Task },
+    { 1000, 0, Display_Task },
     
-    { 1000, 0, count_task },
+    { 10000, 0, count_task },
 };
 
 void TaskExe(void)
