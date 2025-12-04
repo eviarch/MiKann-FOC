@@ -40,8 +40,8 @@ typedef struct
 Task_t Task[TASK_TOTAL] =
 {
     { 1, 0, time_task },
-    { 10, 0, AS5600_Update },
-    { 10, 0, FOC_Task },
+    { 5, 0, AS5600_Update },
+    { 5, 0, FOC_Task },
     // { 1000, 0, UART_Send_Task },
     { 1000, 0, Display_Task },
     

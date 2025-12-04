@@ -34,21 +34,22 @@ void velocityOpenloop(float target_velocity)
 	velocityOpenloop_time_stamp = now;
 }
 
-#define DIR 1  // 方向控制，1为正向，-1为反向
+#define DIR 1  // 方向控制，1为正向，-1为反向z
 // 这里放角度闭环控制代码
 void angleControl_loop(float target_angle)
 {
 	float Uq_out = 0.0f;
-	float Kp = 0.05f;
 	
-	Uq_out = Lim(Kp * (RAD_TO_DEG(target_angle) - DIR * encoder_degree), -VOLTAGE_POWER_SUPPLY/2, VOLTAGE_POWER_SUPPLY/2);
+	PosPI_Update(&angleControl_loop_pid, Lim_Ang_180(target_angle - DIR * encoder_degree));
+	
+	Uq_out = Lim(angleControl_loop_pid.u, -VOLTAGE_POWER_SUPPLY/2, VOLTAGE_POWER_SUPPLY/2);
 
-	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * encoder_degree, 7)));
+	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * DEG_TO_RAD(encoder_degree), 7)));
 }
 
 // 这里放FOC控制代码
 void FOC_Task(void)
 {
 	// velocityOpenloop(10.0f);  // 速度开环测试，10rad/s
-	angleControl_loop(PI/4);
+	angleControl_loop(45.0f);
 }
