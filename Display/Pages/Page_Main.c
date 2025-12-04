@@ -10,12 +10,14 @@
  */
 #include "Page_Main.h"
 #include "AS5600.h"
+#include "FOC.h"
+#include "key_SL.h"
 
 
 // 主页面中的功能选择指针。0 - 当前显示封面。
 // >0 : 表示指向 ShowState 中的具体功能。每一个功能都对应一个页面。
 u8 Page_Main_Ptr = 0;
-
+u8 key_count = 0;
 u8 display_num = 0;
 
 
@@ -62,6 +64,7 @@ void Page_Main_Task(void)
         OLED_ShowNum(2, 8, (int)encoder_degree, 4, FILL_BY_0);
         OLED_ShowNum(3, 7, (int)encoder_turns.total_angle_deg, 5, FILL_BY_0);
         OLED_ShowNum(1, 14, (int)display_num, 3, FILL_BY_0);
+        OLED_ShowNum(4, 1, (int)key_count, 3, FILL_BY_0);
     }
     else
     {
@@ -76,7 +79,8 @@ void Page_Main_Task(void)
  */
 void Page_Main_Key_ShortPress(void)
 {
-    ;
+    key_count++;
+    Zero_Electric_Init();
 }
 
 /**

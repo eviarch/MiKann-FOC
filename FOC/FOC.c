@@ -6,6 +6,7 @@
 #include "AS5600.h"
 #include "PosPID.h"
 
+volatile float zero_electric_angle = 0.0f;
 
 /****************************************速度开环( 力矩 )***************************************************/
 
@@ -20,14 +21,13 @@ void velocityOpenloop(float target_velocity)
 	shaft_angle = _normalizeAngle(shaft_angle + DEG_TO_RAD(target_velocity)*dt);
 
   	// 最大只能设置为Uq = voltage_power_supply/2，否则ua,ub,uc会超出供电电压限幅
-	setPhaseVoltage(VOLTAGE_POWER_SUPPLY/2,  0, _electricalAngle(shaft_angle, 7));
+	setPhaseVoltage(VOLTAGE_POWER_SUPPLY/2,  0, _electricalAngle(shaft_angle, 7), zero_electric_angle);
 
 	velocityOpenloop_time_stamp = now;
 }
 
 /****************************************位置闭环( 力矩-位置 )***************************************************/
 
-#define DIR 1  // 方向控制，1为正向，-1为反向z
 
 PosPI_t angleControl_loop_pid;
 LowPassFilter angleControl_loop_filter;
@@ -42,11 +42,24 @@ void angleControl_loop(float target_angle)
 
 	Uq_out = LowPassFilter_Update(&angleControl_loop_filter, Uq_out, time_now);  // 低通滤波，滤除突变
 
-	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * DEG_TO_RAD(encoder_degree), 7)));
+	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * _normalizeAngle(DEG_TO_RAD(encoder_degree)), 7)), zero_electric_angle);
 }
 
 
+/****************************************速度闭环( 力矩-速度 )***************************************************/
+
+PosPI_t velocityControl_loop_pid;
+
 /****************************************FOC任务运行代码，要运行的函数写在下面***************************************************/
+
+void Zero_Electric_Init(void)
+{
+	setTorque(VOLTAGE_POWER_SUPPLY/2, _3PI_2);
+	HAL_Delay(1000);
+	AS5600_Update();
+	zero_electric_angle = _electricalAngle(DIR * _normalizeAngle(DEG_TO_RAD(encoder_degree)), 7);
+	setTorque(0, _3PI_2);
+}
 
 // FOC初始化函数
 void FOC_Init(void)
@@ -59,6 +72,6 @@ void FOC_Init(void)
 // 这里放FOC控制代码
 void FOC_Task(void)
 {
-	// velocityOpenloop(600.0f);  // 速度开环测试，10度每秒
+	// velocityOpenloop(600.0f);  // 速度开环测试，10度每秒 
 	angleControl_loop(45.0f);  // 位置闭环测试，目标位置45度
 }

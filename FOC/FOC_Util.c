@@ -4,9 +4,9 @@
 #include "tim.h"
 
 float dc_a, dc_b, dc_c;
-float zero_electric_angle = 0.0f;
 float Ualpha=0.0f,Ubeta=0.0f;
 volatile float Ua=0.0f,Ub=0.0f,Uc=0.0f;
+
 
 void setPWM(float Ua, float Ub, float Uc, float Udc)
 {
@@ -27,8 +27,9 @@ void setPWM(float Ua, float Ub, float Uc, float Udc)
 	htim1.Instance->CCR3 = (u16)(dc_c * PWM_CYCLE);
 }
 
-void setPhaseVoltage(float Uq,float Ud, float angle_elctric) {
-	angle_elctric = _normalizeAngle(angle_elctric + zero_electric_angle);
+
+void setPhaseVoltage(float Uq,float Ud, float angle_elctric, float zero_electric_angle) {
+	angle_elctric = _normalizeAngle(angle_elctric - zero_electric_angle);
 
 	// 帕克逆变换
 	Ualpha =  -Uq*_sin(angle_elctric); 
@@ -41,4 +42,20 @@ void setPhaseVoltage(float Uq,float Ud, float angle_elctric) {
 
  	// 设置PWM
  	setPWM(Ua,Ub,Uc, VOLTAGE_POWER_SUPPLY);
+}
+
+
+void setTorque(float Uq,float angle_elctric) {
+	LimAbsAsgn(Uq, VOLTAGE_POWER_SUPPLY/2);
+	angle_elctric = _normalizeAngle(angle_elctric);
+
+	// 帕克逆变换
+	Ualpha =  -Uq*_sin(angle_elctric); 
+	Ubeta =   Uq*_cos(angle_elctric); 
+
+	// 克拉克逆变换
+	Ua = Ualpha + VOLTAGE_POWER_SUPPLY/2;
+	Ub = (_sqrtApprox(3)*Ubeta-Ualpha)/2 + VOLTAGE_POWER_SUPPLY/2;
+	Uc = (-Ualpha-_sqrtApprox(3)*Ubeta)/2 + VOLTAGE_POWER_SUPPLY/2;
+	setPWM(Ua,Ub,Uc, VOLTAGE_POWER_SUPPLY);
 }

@@ -9,6 +9,7 @@
 #define VOLTAGE_LIMIT        12.0f      // 电机允许的最大电压
 
 void setPWM(float Ua, float Ub, float Uc, float Udc);
-void setPhaseVoltage(float Uq,float Ud, float angle_elctric);
+void setPhaseVoltage(float Uq,float Ud, float angle_elctric, float zero_electric_angle);
+void setTorque(float Uq,float angle_elctric);
 
 #endif

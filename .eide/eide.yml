@@ -11,6 +11,7 @@ srcDirs:
   - Encoder
   - Communication
   - FOC
+  - Key
 virtualFolder:
   name: <virtual_root>
   files: []
@@ -39,6 +40,7 @@ targets:
         - Communication
         - FOC
         - FOC/Math
+        - Key
       libList: []
     excludeList: []
     toolchain: GCC
