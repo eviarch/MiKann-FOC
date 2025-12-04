@@ -15,7 +15,7 @@
 
 typedef struct {
     float last_angle_deg;   // 上一次角度
-    u32 turns;          // 圈数
+    s32 turns;          // 圈数
     float total_angle_deg;  // 连续角度（圈数*360 + 当前角度）
     BOOL initialized;    // 是否首次运行
 } Encoder_Turn_t;
@@ -26,6 +26,6 @@ extern float encoder_degree;  // 存储转换后的角度值(度)
 
 
 void AS5600_Update(void);
-void Revolution_Count_Update(void);
+void Turns_Count_Update(void);
 
 #endif // AS5600_H

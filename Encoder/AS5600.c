@@ -5,8 +5,8 @@
 #define FLT_MAX         3.402823466e+38F
 #endif
 
-#ifndef UINT32_MAX
-#define UINT32_MAX      0xffffffffUL
+#ifndef INT32_MAX
+#define INT32_MAX      0x7fffffffL
 #endif
 
 float encoder_degree = 0.0f;  // 存储转换后的角度值(度)
@@ -68,7 +68,7 @@ float AS5600_RawAngleToDegree(u16 raw_angle)
 
 /*********************圈数计算*************************/
 
-void Revolution_Count_Update(void)
+void Turns_Count_Update(void)
 {
     if (!encoder_turns.initialized) {
         encoder_turns.initialized = 1;
@@ -87,7 +87,10 @@ void Revolution_Count_Update(void)
     }
 
     // 防止圈数溢出
-    if (encoder_turns.turns >= UINT32_MAX - 100)
+    if (encoder_turns.turns >= INT32_MAX - 100)
+    {
+        encoder_turns.turns = 0;  // 防止溢出，重置圈数
+    } else if (encoder_turns.turns <= -INT32_MAX + 100)
     {
         encoder_turns.turns = 0;  // 防止溢出，重置圈数
     }
@@ -120,5 +123,5 @@ void AS5600_Update(void)
         encoder_degree = -888.8f; // 读取失败处理
     }
 
-    Revolution_Count_Update();
+    Turns_Count_Update();
 }
