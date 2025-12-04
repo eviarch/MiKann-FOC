@@ -7,25 +7,17 @@
 #include "PosPID.h"
 
 
+/****************************************速度开环( 力矩 )***************************************************/
+
 u32 velocityOpenloop_time_stamp = 0;
-float Uq_out_last = 0.0f;
 float shaft_angle=0.0f;
-PosPI_t angleControl_loop_pid;
-
-// FOC初始化函数
-void FOC_Init(void)
-{
-	PosPI_Init(&angleControl_loop_pid, 0.08f, 0.01f, 10.0f, 0.0f, VOLTAGE_POWER_SUPPLY/2);
-}
-
-
 // 速度开环控制函数
 void velocityOpenloop(float target_velocity)
 {
 	u32 now = time_now;
 	float dt = (float)(now - velocityOpenloop_time_stamp) / 10000.0f;		// 秒
 	if (dt <= 0.0f)	dt = 1.0f;
-	shaft_angle = _normalizeAngle(shaft_angle + target_velocity*dt);
+	shaft_angle = _normalizeAngle(shaft_angle + DEG_TO_RAD(target_velocity)*dt);
 
   	// 最大只能设置为Uq = voltage_power_supply/2，否则ua,ub,uc会超出供电电压限幅
 	setPhaseVoltage(VOLTAGE_POWER_SUPPLY/2,  0, _electricalAngle(shaft_angle, 7));
@@ -33,7 +25,12 @@ void velocityOpenloop(float target_velocity)
 	velocityOpenloop_time_stamp = now;
 }
 
+/****************************************位置闭环( 力矩-位置 )***************************************************/
+
 #define DIR 1  // 方向控制，1为正向，-1为反向z
+
+float Uq_out_last = 0.0f;
+PosPI_t angleControl_loop_pid;
 // 这里放角度闭环控制代码
 void angleControl_loop(float target_angle)
 {
@@ -50,9 +47,19 @@ void angleControl_loop(float target_angle)
 	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * DEG_TO_RAD(encoder_degree), 7)));
 }
 
+
+/****************************************FOC任务运行代码，要运行的函数写在下面***************************************************/
+
+// FOC初始化函数
+void FOC_Init(void)
+{
+	PosPI_Init(&angleControl_loop_pid, 0.08f, 0.01f, 10.0f, 0.0f, VOLTAGE_POWER_SUPPLY/2);
+}
+
+
 // 这里放FOC控制代码
 void FOC_Task(void)
 {
-	// velocityOpenloop(10.0f);  // 速度开环测试，10rad/s
-	angleControl_loop(45.0f);
+	velocityOpenloop(600.0f);  // 速度开环测试，10度每秒
+	// angleControl_loop(45.0f);  // 位置闭环测试，目标位置45度
 }

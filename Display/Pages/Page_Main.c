@@ -29,10 +29,11 @@ void Page_Main_Subtrate(void)
 {
     switch (Page_Main_Ptr)
     {
-        case 0:
+        case 0: 
         {
-            OLED_ShowCnString16(1, 1, "欢迎");
-            OLED_ShowChar(1, 5, '!');
+            OLED_ShowString(1, 1, "Turn: ");
+			OLED_ShowString(2, 1, "Angle:");
+			OLED_ShowString(3, 1, "Total:");
         } break;
         
         case 1:
@@ -57,7 +58,9 @@ void Page_Main_Task(void)
 {
     if (Page_Main_Ptr == 0)
     {
-        OLED_ShowNum(2, 1, (int)encoder_degree, 4, FILL_BY_0);
+        OLED_ShowNum(1, 7, (int)encoder_turns.turns, 5, FILL_BY_0);
+        OLED_ShowNum(2, 8, (int)encoder_degree, 4, FILL_BY_0);
+        OLED_ShowNum(3, 7, (int)encoder_turns.total_angle_deg, 5, FILL_BY_0);
         OLED_ShowNum(1, 14, (int)display_num, 3, FILL_BY_0);
     }
     else
