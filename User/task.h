@@ -11,5 +11,6 @@ extern volatile u32 time_now;
 #define GET_TaskExeFlag()       (TaskExeFlag)
 
 void TaskExe(void);
+void Task_Init(void);
 
 #endif // !__TASK_H

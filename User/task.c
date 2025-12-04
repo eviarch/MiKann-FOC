@@ -34,16 +34,16 @@ typedef struct
     u16 count;
     void (*taskHook)(void);
 } Task_t;
-
 #define TASK_TOTAL      5
 
+// 百微秒
 Task_t Task[TASK_TOTAL] =
 {
     { 1, 0, time_task },
-    { 10, 0, FOC_Task },
     { 10, 0, AS5600_Update },
+    { 10, 0, FOC_Task },
     // { 1000, 0, UART_Send_Task },
-    { 100, 0, Display_Task },
+    { 1000, 0, Display_Task },
     
     { 10000, 0, count_task },
 };
@@ -62,6 +62,12 @@ void TaskExe(void)
             }
         }
     }
+}
+
+void Task_Init(void)
+{
+    Display_Init();
+	FOC_Init();
 }
 
 

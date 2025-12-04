@@ -3,14 +3,19 @@
 #include "FOC_Util.h"
 #include "FOC_Math.h"
 #include "task.h"
+#include "AS5600.h"
+#include "PosPID.h"
 
 
 u32 velocityOpenloop_time_stamp = 0;
 float shaft_angle=0.0f;
+PosPI_t angleControl_loop_pid;
 
 // FOC初始化函数
 void FOC_Init(void)
 {
+	PosPI_Init(&angleControl_loop_pid, 0.08f, 0.01f, 10.0f, 0.0f, VOLTAGE_POWER_SUPPLY/2);
+
 	;// PWM初始化代码放这里
 }
 
@@ -24,14 +29,26 @@ void velocityOpenloop(float target_velocity)
 	shaft_angle = _normalizeAngle(shaft_angle + target_velocity*dt);
 
   	// 最大只能设置为Uq = voltage_power_supply/2，否则ua,ub,uc会超出供电电压限幅
-	setPhaseVoltage(VOLTAGE_POWER_SUPPLY/6,  0, _electricalAngle(shaft_angle, 7));
+	setPhaseVoltage(VOLTAGE_POWER_SUPPLY/2,  0, _electricalAngle(shaft_angle, 7));
 
 	velocityOpenloop_time_stamp = now;
 }
 
+#define DIR 1  // 方向控制，1为正向，-1为反向
+// 这里放角度闭环控制代码
+void angleControl_loop(float target_angle)
+{
+	float Uq_out = 0.0f;
+	float Kp = 0.05f;
+	
+	Uq_out = Lim(Kp * (RAD_TO_DEG(target_angle) - DIR * encoder_degree), -VOLTAGE_POWER_SUPPLY/2, VOLTAGE_POWER_SUPPLY/2);
+
+	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * encoder_degree, 7)));
+}
 
 // 这里放FOC控制代码
 void FOC_Task(void)
 {
-	velocityOpenloop(10.0f);  // 速度开环测试，10rad/s
+	// velocityOpenloop(10.0f);  // 速度开环测试，10rad/s
+	angleControl_loop(PI/4);
 }
