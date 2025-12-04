@@ -41,9 +41,9 @@ Task_t Task[TASK_TOTAL] =
 {
     { 1, 0, time_task },
     { 10, 0, FOC_Task },
-    { 600, 0, AS5600_Update },
+    { 10, 0, AS5600_Update },
     // { 1000, 0, UART_Send_Task },
-    { 1000, 0, Display_Task },
+    { 100, 0, Display_Task },
     
     { 10000, 0, count_task },
 };
