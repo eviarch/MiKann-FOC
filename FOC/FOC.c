@@ -8,6 +8,7 @@
 
 
 u32 velocityOpenloop_time_stamp = 0;
+float Uq_out_last = 0.0f;
 float shaft_angle=0.0f;
 PosPI_t angleControl_loop_pid;
 
@@ -15,8 +16,6 @@ PosPI_t angleControl_loop_pid;
 void FOC_Init(void)
 {
 	PosPI_Init(&angleControl_loop_pid, 0.08f, 0.01f, 10.0f, 0.0f, VOLTAGE_POWER_SUPPLY/2);
-
-	;// PWM初始化代码放这里
 }
 
 
@@ -43,6 +42,10 @@ void angleControl_loop(float target_angle)
 	PosPI_Update(&angleControl_loop_pid, Lim_Ang_180(target_angle - DIR * encoder_degree));
 	
 	Uq_out = Lim(angleControl_loop_pid.u, -VOLTAGE_POWER_SUPPLY/2, VOLTAGE_POWER_SUPPLY/2);
+
+	Uq_out = lowpass_filter(Uq_out_last, Uq_out, 0.1f);  // 低通滤波，滤除突变
+
+	Uq_out_last = Uq_out;
 
 	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * DEG_TO_RAD(encoder_degree), 7)));
 }

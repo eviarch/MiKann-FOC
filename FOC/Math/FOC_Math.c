@@ -84,3 +84,17 @@ float _sqrtApprox(float number)
 
     return number * y;
 }
+
+/**
+ * @brief 低通滤波器
+ * 
+ * @param previous 上次滤波结果
+ * @param current 当前采样值
+ * @param alpha 滤波系数，范围 0~1，值越大响应越快，值越小滤波效果越明显
+ * @return float 滤波后结果
+ */
+float lowpass_filter(float previous, float current, float alpha)
+{
+    return previous + alpha * (current - previous);
+}
+

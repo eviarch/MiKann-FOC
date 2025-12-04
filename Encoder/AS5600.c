@@ -61,7 +61,7 @@ void AS5600_ReadRawAngle_ADC(ADC_HandleTypeDef *hadc)
 void AS5600_Update(void)
 {
     // AS5600_ReadRawAngle_I2C();
-    AS5600_ReadRawAngle_ADC(&hadc1);
+    AS5600_ReadRawAngle_ADC(&ENCODER_ADC);
     if(raw_angle != 0xFFFF)
     {
         encoder_degree = AS5600_RawAngleToDegree(raw_angle);

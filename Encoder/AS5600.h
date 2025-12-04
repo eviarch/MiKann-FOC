@@ -9,6 +9,7 @@
 #define MAKEWORD(l, h)          ((WORD)(((BYTE)(l)) | ((WORD)((BYTE)(h))) << 8))
 
 #define ENCODER_I2C     hi2c2  // 使用的I2C句柄
+#define ENCODER_ADC     hadc1  // 使用的ADC句柄
 
 extern I2C_HandleTypeDef hi2c2;             // 你的 I2C 句柄（可改）
 
