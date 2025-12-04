@@ -78,12 +78,52 @@ float _sqrtApprox(float number)
     float y;
 
     y = number;
-    i = *(long *)&y;
+    i = *(s32 *)&y;
     i = 0x5f375a86 - (i >> 1);
     y = *(float *)&i;
 
     return number * y;
 }
+
+
+/***********************LowPassFilter*************************/
+// 初始化
+void LowPassFilter_Init(LowPassFilter *f, float time_constant, u32 time_init)
+{
+    f->Tf = time_constant;
+    f->y_prev = 0.0f;
+    f->timestamp_prev = time_init;
+}
+
+// 低通滤波执行函数
+float LowPassFilter_Update(LowPassFilter *f, float x, u32 time_now)
+{
+    uint32_t timestamp = time_now;
+    float dt = (timestamp - f->timestamp_prev) * 10000.0f;
+
+    // 防止 dt 异常
+    if (dt < 0.0f) {
+        dt = 1e-3f;
+    }
+    else if (dt > 0.3f) {
+        f->y_prev = x;
+        f->timestamp_prev = timestamp;
+        return x;
+    }
+
+    // 计算α
+    float alpha = f->Tf / (f->Tf + dt);
+
+    // 滤波
+    float y = alpha * f->y_prev + (1.0f - alpha) * x;
+
+    f->y_prev = y;
+    f->timestamp_prev = timestamp;
+
+    return y;
+}
+
+
 
 /**
  * @brief 低通滤波器

@@ -29,8 +29,8 @@ void velocityOpenloop(float target_velocity)
 
 #define DIR 1  // 方向控制，1为正向，-1为反向z
 
-float Uq_out_last = 0.0f;
 PosPI_t angleControl_loop_pid;
+LowPassFilter angleControl_loop_filter;
 // 这里放角度闭环控制代码
 void angleControl_loop(float target_angle)
 {
@@ -40,9 +40,7 @@ void angleControl_loop(float target_angle)
 	
 	Uq_out = Lim(angleControl_loop_pid.u, -VOLTAGE_POWER_SUPPLY/2, VOLTAGE_POWER_SUPPLY/2);
 
-	Uq_out = lowpass_filter(Uq_out_last, Uq_out, 0.1f);  // 低通滤波，滤除突变
-
-	Uq_out_last = Uq_out;
+	Uq_out = LowPassFilter_Update(&angleControl_loop_filter, Uq_out, time_now);  // 低通滤波，滤除突变
 
 	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * DEG_TO_RAD(encoder_degree), 7)));
 }
@@ -53,13 +51,14 @@ void angleControl_loop(float target_angle)
 // FOC初始化函数
 void FOC_Init(void)
 {
-	PosPI_Init(&angleControl_loop_pid, 0.08f, 0.01f, 10.0f, 0.0f, VOLTAGE_POWER_SUPPLY/2);
+	PosPI_Init(&angleControl_loop_pid, 0.1f, 0.02f, 1.0f, 0.5f, VOLTAGE_POWER_SUPPLY/2);
+	LowPassFilter_Init(&angleControl_loop_filter, 0.1f, time_now);
 }
 
 
 // 这里放FOC控制代码
 void FOC_Task(void)
 {
-	velocityOpenloop(600.0f);  // 速度开环测试，10度每秒
-	// angleControl_loop(45.0f);  // 位置闭环测试，目标位置45度
+	// velocityOpenloop(600.0f);  // 速度开环测试，10度每秒
+	angleControl_loop(45.0f);  // 位置闭环测试，目标位置45度
 }

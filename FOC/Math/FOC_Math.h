@@ -121,14 +121,16 @@ float _electricalAngle(float shaft_angle, int pole_pairs);
  */
 float _sqrtApprox(float value);
 
-/**
- * @brief 低通滤波器
- * 
- * @param previous 上次滤波结果
- * @param current 当前采样值
- * @param alpha 滤波系数，范围 0~1，值越大响应越快，值越小滤波效果越明显
- * @return float 滤波后结果
- */
-float lowpass_filter(float previous, float current, float alpha);
+
+// 低通滤波器结构体
+typedef struct {
+    float Tf;              // 时间常数
+    float y_prev;          // 上次输出
+    u32 timestamp_prev;  // 上次时间戳 (us)
+} LowPassFilter;
+
+void LowPassFilter_Init(LowPassFilter *f, float time_constant, u32 time_init);
+float LowPassFilter_Update(LowPassFilter *f, float x, u32 time_now);
+
 
 #endif /* FOC_UTILS_H */
