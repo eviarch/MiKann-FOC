@@ -16,7 +16,7 @@ float shaft_angle=0.0f;
 void velocityOpenloop(float target_velocity)
 {
 	u32 now = time_now;
-	float dt = (float)(now - velocityOpenloop_time_stamp) / 10000.0f;		// 秒
+	float dt = (float)(now - velocityOpenloop_time_stamp) / TIME_FACTOR;		// 秒
 	if (dt <= 0.0f)	dt = 1.0f;
 	shaft_angle = _normalizeAngle(shaft_angle + DEG_TO_RAD(target_velocity)*dt);
 
@@ -74,4 +74,5 @@ void FOC_Task(void)
 {
 	// velocityOpenloop(600.0f);  // 速度开环测试，10度每秒 
 	angleControl_loop(45.0f);  // 位置闭环测试，目标位置45度
+	// setTorque(VOLTAGE_POWER_SUPPLY / 2, _3PI_2);
 }

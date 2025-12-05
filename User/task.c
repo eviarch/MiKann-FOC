@@ -6,6 +6,7 @@
 #include "FOC.h"
 #include "key_SL.h"
 
+
 volatile u8 TaskExeFlag = 0;
 volatile u32 time_now = 0;
 
@@ -35,14 +36,15 @@ typedef struct
     u16 count;
     void (*taskHook)(void);
 } Task_t;
-#define TASK_TOTAL      6
+#define TASK_TOTAL      7
 
 // 百微秒
 Task_t Task[TASK_TOTAL] =
 {
     { 1, 0, time_task },
     { 5, 0, AS5600_Update },
-    { 5, 0, FOC_Task },
+    { 50, 0, FOC_Task },
+    { 500, 0, Velocity_SinCos_Update},
     // { 1000, 0, UART_Send_Task },
     { 100, 0, Display_Task },
     { 200, 0, KeySL_Task },

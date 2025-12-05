@@ -1,5 +1,7 @@
 
 #include "AS5600.h"
+#include "task.h"
+
 
 #ifndef FLT_MAX
 #define FLT_MAX         3.402823466e+38F
@@ -9,9 +11,14 @@
 #define INT32_MAX      0x7fffffffL
 #endif
 
-float encoder_degree = 0.0f;  // 存储转换后的角度值(度)
+
+float encoder_degree = 0.0f;  // 存储每次采样后转换后的角度值(度)
 u16 raw_angle;              // 存储读取到的原始角度值(0-4095)
+
 Encoder_Turn_t encoder_turns = {0};
+Encoder_Velocity_t encoder_velocity = {0};
+Encoder_Velocity_Sin_Cos_t encoder_velocity_sc = {0};
+
 
 /*********************I2C读取*************************/
 
@@ -66,11 +73,108 @@ float AS5600_RawAngleToDegree(u16 raw_angle)
 }
 
 
+/*********************角速度计算*************************/
+
+//  自带了初始化判断, 只做了速度低通滤波
+//  传统方法求解角速度
+void Velocity_Calculate_Update(void)
+{
+    float angle_diff;
+    float veloc_temp;
+    if (!encoder_velocity.initialized)      // 初始化语句
+    {
+        encoder_velocity.initialized = 1;
+        encoder_velocity.accel = 0;
+        encoder_velocity.velocity = 0;
+        encoder_velocity.angle_prev = encoder_degree;
+        encoder_velocity.time_prev = time_now;
+        LowPassFilter_Init(&encoder_velocity.velocity_lpf, 0.001, time_now);
+        return;
+    }
+
+    float dt = (time_now - encoder_velocity.time_prev) / TIME_FACTOR;       // 秒
+    if(dt < 0.0f || dt >= 0.3f)     // 超时重置，但未将time_now溢出纳入考虑范围
+    {
+        encoder_velocity.initialized = 1;
+        encoder_velocity.accel = 0;
+        encoder_velocity.velocity = 0;
+        encoder_velocity.angle_prev = encoder_degree;
+        encoder_velocity.time_prev = time_now;
+        LowPassFilter_Init(&encoder_velocity.velocity_lpf, 0.001, time_now);
+        return;
+    }
+
+    angle_diff = Lim_Ang_180(encoder_degree - encoder_velocity.angle_prev);
+    if (ABS(angle_diff) < 0.2f)  angle_diff = 0.0f;
+    veloc_temp = angle_diff / dt;
+
+    LowPassFilter_Update(&encoder_velocity.velocity_lpf, veloc_temp, time_now);
+
+    //  更新数据
+    encoder_velocity.accel = angle_diff / dt - encoder_velocity.velocity;       // 此时encoder_velocity.velocity仍是上一次的数值
+    encoder_velocity.velocity = angle_diff / dt;        //  此时encoder_velocity.velocity更新
+    encoder_velocity.angle_prev = encoder_degree;
+    encoder_velocity.time_prev = time_now;
+}
+
+
+//  自带了初始化判断, 只做了速度低通滤波
+//  sin/cos 微分速度估计器
+void Velocity_SinCos_Update(void)
+{
+    float veloc_temp;
+
+    float s = _sin(DEG_TO_RAD(encoder_degree));
+    float c = _cos(DEG_TO_RAD(encoder_degree));
+
+    if (!encoder_velocity_sc.initialized) {
+        encoder_velocity_sc.initialized = 1;
+        encoder_velocity_sc.accel = 0;
+        encoder_velocity_sc.velocity = 0;
+        encoder_velocity_sc.s_prev = s;
+        encoder_velocity_sc.c_prev = c;
+        encoder_velocity_sc.time_prev = time_now;
+        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, 0.01, time_now);
+        return;
+    }
+
+    float dt = (time_now - encoder_velocity_sc.time_prev) / TIME_FACTOR;
+
+    if(dt < 0.0f || dt >= 0.3f)     // 超时重置，但未将time_now溢出纳入考虑范围
+    {
+        encoder_velocity_sc.initialized = 1;
+        encoder_velocity_sc.accel = 0;
+        encoder_velocity_sc.velocity = 0;
+        encoder_velocity_sc.s_prev = s;
+        encoder_velocity_sc.c_prev = c;
+        encoder_velocity_sc.time_prev = time_now;
+        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, 0.01, time_now);
+        return;
+    }
+
+    float ds = s - encoder_velocity_sc.s_prev;
+    float dc = c - encoder_velocity_sc.c_prev;
+
+    veloc_temp = RAD_TO_DEG((c * ds - s * dc) / dt);   // deg/s
+
+    LowPassFilter_Update(&encoder_velocity_sc.velocity_lpf, veloc_temp, time_now);
+
+    //  更新数据
+    encoder_velocity_sc.accel = veloc_temp - encoder_velocity_sc.velocity;       // 此时encoder_velocity.velocity仍是上一次的数值
+    encoder_velocity_sc.velocity = veloc_temp;        //  此时encoder_velocity.velocity更新
+    encoder_velocity_sc.s_prev = s;
+    encoder_velocity_sc.c_prev = c;
+    encoder_velocity_sc.time_prev = time_now;
+}
+
+
 /*********************圈数计算*************************/
 
+// 自带了初始化判断
 void Turns_Count_Update(void)
 {
-    if (!encoder_turns.initialized) {
+    if (!encoder_turns.initialized)     // 初始化语句
+    {
         encoder_turns.initialized = 1;
         encoder_turns.last_angle_deg = encoder_degree;
         encoder_turns.turns = 0;
@@ -80,9 +184,11 @@ void Turns_Count_Update(void)
 
     float diff = encoder_degree - encoder_turns.last_angle_deg;
     // 判断跨零点
-    if (diff > 270.0f) {
+    if (diff > 270.0f) 
+    {
         encoder_turns.turns -= 1;   // 方向：从 359° → 0°（逆向跨零点）
-    } else if (diff < -270.0f) {
+    } else if (diff < -270.0f) 
+    {
         encoder_turns.turns += 1;   // 方向：从 0° → 359°（正向跨零点）
     }
 
@@ -108,6 +214,11 @@ void Turns_Count_Update(void)
 
 /*********************任务更新*************************/
 
+void AS5600_Init(void)
+{
+    ;
+}
+
 
 void AS5600_Update(void)
 {
@@ -116,12 +227,8 @@ void AS5600_Update(void)
     if(raw_angle != 0xFFFF)
     {
         encoder_degree = AS5600_RawAngleToDegree(raw_angle);
-        // 在此处处理angle_degree，例如存储或显示
-    }
-    else
-    {
-        encoder_degree = -888.8f; // 读取失败处理
     }
 
+    // Velocity_Calculate_Update();
     Turns_Count_Update();
 }

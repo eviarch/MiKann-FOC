@@ -10,6 +10,8 @@ extern volatile u32 time_now;
 #define CLR_TaskExeFlag()       (TaskExeFlag = 0)
 #define GET_TaskExeFlag()       (TaskExeFlag)
 
+#define TIME_FACTOR     10000.0f        //  时间因子，例如: Time_task 以 100us 周期执行，则需要乘 10000.0f 变为 1s
+
 void TaskExe(void);
 void Task_Init(void);
 

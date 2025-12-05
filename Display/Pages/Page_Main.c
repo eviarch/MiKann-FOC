@@ -35,7 +35,8 @@ void Page_Main_Subtrate(void)
         {
             OLED_ShowString(1, 1, "Turn: ");
 			OLED_ShowString(2, 1, "Angle:");
-			OLED_ShowString(3, 1, "Total:");
+			OLED_ShowString(3, 1, "Veloc:");
+            OLED_ShowString(4, 1, "Accel:");
         } break;
         
         case 1:
@@ -60,11 +61,11 @@ void Page_Main_Task(void)
 {
     if (Page_Main_Ptr == 0)
     {
-        OLED_ShowNum(1, 7, (int)encoder_turns.turns, 5, FILL_BY_0);
-        OLED_ShowNum(2, 8, (int)encoder_degree, 4, FILL_BY_0);
-        OLED_ShowNum(3, 7, (int)encoder_turns.total_angle_deg, 5, FILL_BY_0);
+        OLED_ShowNum(1, 7, (int)encoder_turns.turns, 5, FILL_BY_SPACE);
+        OLED_ShowNum(2, 7, (int)encoder_degree, 3, FILL_BY_SPACE);
+        OLED_ShowNum(3, 7, (int)encoder_velocity_sc.velocity, 5, FILL_BY_SPACE);
+        OLED_ShowNum(4, 7, (int)encoder_velocity_sc.accel, 5, FILL_BY_SPACE);
         OLED_ShowNum(1, 14, (int)display_num, 3, FILL_BY_0);
-        OLED_ShowNum(4, 1, (int)key_count, 3, FILL_BY_0);
     }
     else
     {
