@@ -120,6 +120,7 @@ void Velocity_Calculate_Update(void)
 
 //  自带了初始化判断, 不做速度低通滤波
 //  sin/cos 微分速度估计器
+#define VELOC_SC_LOW_PASS   0.6
 void Velocity_SinCos_Update(void)
 {
     float veloc_temp;
@@ -134,7 +135,7 @@ void Velocity_SinCos_Update(void)
         encoder_velocity_sc.s_prev = s;
         encoder_velocity_sc.c_prev = c;
         encoder_velocity_sc.time_prev = time_now;
-        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, 1);
+        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, VELOC_SC_LOW_PASS);
         return;
     }
 
@@ -148,7 +149,7 @@ void Velocity_SinCos_Update(void)
         encoder_velocity_sc.s_prev = s;
         encoder_velocity_sc.c_prev = c;
         encoder_velocity_sc.time_prev = time_now;
-        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, 1);
+        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, VELOC_SC_LOW_PASS);
         return;
     }
 

@@ -13,7 +13,7 @@ volatile u32 time_now = 0;
 void time_task(void)
 {
     time_now++;
-    if(time_now >= 60000)
+    if(time_now >= UINT32_MAX - 1)
     {
         time_now = 0;
     }
@@ -45,7 +45,7 @@ Task_t Task[TASK_TOTAL] =
     { 5, 0, AS5600_Update },
     { 50, 0, FOC_Task },
     { 500, 0, Velocity_SinCos_Update},
-    // { 1000, 0, UART_Send_Task },
+    // { 10000, 0, UART_Send_Task },
     { 100, 0, Display_Task },
     { 200, 0, KeySL_Task },
     

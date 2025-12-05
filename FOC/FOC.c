@@ -49,6 +49,13 @@ void angleControl_loop(float target_angle)
 /****************************************速度闭环( 力矩-速度 )***************************************************/
 
 PosPI_t velocityControl_loop_pid;
+LowPassFilter_t velocityControl_loop_filter;
+void velocityControl_loop(float velocity)	// DEG
+{
+	PosPI_Update(&velocityControl_loop_pid, velocity - encoder_velocity_sc.velocity);
+	LowPassFilter(&velocityControl_loop_filter, velocityControl_loop_pid.u);
+	setPhaseVoltage(velocityControl_loop_pid.u, 0.0f,  _normalizeAngle(_electricalAngle(DIR * _normalizeAngle(DEG_TO_RAD(encoder_degree)), 7)), zero_electric_angle);
+}
 
 /****************************************FOC任务运行代码，要运行的函数写在下面***************************************************/
 
@@ -64,8 +71,10 @@ void Zero_Electric_Init(void)
 // FOC初始化函数
 void FOC_Init(void)
 {
-	PosPI_Init(&angleControl_loop_pid, 0.1f, 0.02f, 1.0f, 0.5f, VOLTAGE_POWER_SUPPLY/2);
+	PosPI_Init(&angleControl_loop_pid, 0.03f, 3.0f / 5000.0f, 5000.0f, 50.0f, VOLTAGE_POWER_SUPPLY/2);
+	PosPI_Init(&velocityControl_loop_pid, 0.0025f, 6.0f / 50000.0f, 50000.0f, 300.0f, VOLTAGE_POWER_SUPPLY/2);
 	LowPassFilter_Init(&angleControl_loop_filter, 0.1f);
+	LowPassFilter_Init(&velocityControl_loop_filter, 1.0f);
 }
 
 
@@ -75,4 +84,5 @@ void FOC_Task(void)
 	// velocityOpenloop(600.0f);  // 速度开环测试，10度每秒 
 	angleControl_loop(45.0f);  // 位置闭环测试，目标位置45度
 	// setTorque(VOLTAGE_POWER_SUPPLY / 2, _3PI_2);
+	// velocityControl_loop(1000.0f);
 }
