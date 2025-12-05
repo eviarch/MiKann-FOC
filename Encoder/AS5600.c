@@ -88,7 +88,7 @@ void Velocity_Calculate_Update(void)
         encoder_velocity.velocity = 0;
         encoder_velocity.angle_prev = encoder_degree;
         encoder_velocity.time_prev = time_now;
-        LowPassFilter_Init(&encoder_velocity.velocity_lpf, 0.001, time_now);
+        LowPassFilter_Init(&encoder_velocity.velocity_lpf, 0.1);
         return;
     }
 
@@ -100,7 +100,7 @@ void Velocity_Calculate_Update(void)
         encoder_velocity.velocity = 0;
         encoder_velocity.angle_prev = encoder_degree;
         encoder_velocity.time_prev = time_now;
-        LowPassFilter_Init(&encoder_velocity.velocity_lpf, 0.001, time_now);
+        LowPassFilter_Init(&encoder_velocity.velocity_lpf, 0.1);
         return;
     }
 
@@ -108,17 +108,17 @@ void Velocity_Calculate_Update(void)
     if (ABS(angle_diff) < 0.2f)  angle_diff = 0.0f;
     veloc_temp = angle_diff / dt;
 
-    LowPassFilter_Update(&encoder_velocity.velocity_lpf, veloc_temp, time_now);
+    LowPassFilter(&encoder_velocity.velocity_lpf, veloc_temp);
 
     //  更新数据
     encoder_velocity.accel = angle_diff / dt - encoder_velocity.velocity;       // 此时encoder_velocity.velocity仍是上一次的数值
-    encoder_velocity.velocity = angle_diff / dt;        //  此时encoder_velocity.velocity更新
+    encoder_velocity.velocity = encoder_velocity.velocity_lpf.y_prev;        //  此时encoder_velocity.velocity更新
     encoder_velocity.angle_prev = encoder_degree;
     encoder_velocity.time_prev = time_now;
 }
 
 
-//  自带了初始化判断, 只做了速度低通滤波
+//  自带了初始化判断, 不做速度低通滤波
 //  sin/cos 微分速度估计器
 void Velocity_SinCos_Update(void)
 {
@@ -134,7 +134,7 @@ void Velocity_SinCos_Update(void)
         encoder_velocity_sc.s_prev = s;
         encoder_velocity_sc.c_prev = c;
         encoder_velocity_sc.time_prev = time_now;
-        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, 0.01, time_now);
+        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, 1);
         return;
     }
 
@@ -148,7 +148,7 @@ void Velocity_SinCos_Update(void)
         encoder_velocity_sc.s_prev = s;
         encoder_velocity_sc.c_prev = c;
         encoder_velocity_sc.time_prev = time_now;
-        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, 0.01, time_now);
+        LowPassFilter_Init(&encoder_velocity_sc.velocity_lpf, 1);
         return;
     }
 
@@ -157,11 +157,11 @@ void Velocity_SinCos_Update(void)
 
     veloc_temp = RAD_TO_DEG((c * ds - s * dc) / dt);   // deg/s
 
-    LowPassFilter_Update(&encoder_velocity_sc.velocity_lpf, veloc_temp, time_now);
+    LowPassFilter(&encoder_velocity_sc.velocity_lpf, veloc_temp);
 
     //  更新数据
     encoder_velocity_sc.accel = veloc_temp - encoder_velocity_sc.velocity;       // 此时encoder_velocity.velocity仍是上一次的数值
-    encoder_velocity_sc.velocity = veloc_temp;        //  此时encoder_velocity.velocity更新
+    encoder_velocity_sc.velocity = encoder_velocity_sc.velocity_lpf.y_prev;        //  此时encoder_velocity.velocity更新
     encoder_velocity_sc.s_prev = s;
     encoder_velocity_sc.c_prev = c;
     encoder_velocity_sc.time_prev = time_now;

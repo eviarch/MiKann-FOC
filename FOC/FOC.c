@@ -30,7 +30,7 @@ void velocityOpenloop(float target_velocity)
 
 
 PosPI_t angleControl_loop_pid;
-LowPassFilter angleControl_loop_filter;
+LowPassFilter_t angleControl_loop_filter;
 // 这里放角度闭环控制代码
 void angleControl_loop(float target_angle)
 {
@@ -40,9 +40,9 @@ void angleControl_loop(float target_angle)
 	
 	Uq_out = Lim(angleControl_loop_pid.u, -VOLTAGE_POWER_SUPPLY/2, VOLTAGE_POWER_SUPPLY/2);
 
-	Uq_out = LowPassFilter_Update(&angleControl_loop_filter, Uq_out, time_now);  // 低通滤波，滤除突变
+	LowPassFilter(&angleControl_loop_filter, Uq_out);  // 低通滤波，滤除突变
 
-	setPhaseVoltage(Uq_out, 0.0f, _normalizeAngle(_electricalAngle(DIR * _normalizeAngle(DEG_TO_RAD(encoder_degree)), 7)), zero_electric_angle);
+	setPhaseVoltage(angleControl_loop_filter.y_prev, 0.0f, _normalizeAngle(_electricalAngle(DIR * _normalizeAngle(DEG_TO_RAD(encoder_degree)), 7)), zero_electric_angle);
 }
 
 
@@ -65,7 +65,7 @@ void Zero_Electric_Init(void)
 void FOC_Init(void)
 {
 	PosPI_Init(&angleControl_loop_pid, 0.1f, 0.02f, 1.0f, 0.5f, VOLTAGE_POWER_SUPPLY/2);
-	LowPassFilter_Init(&angleControl_loop_filter, 0.1f, time_now);
+	LowPassFilter_Init(&angleControl_loop_filter, 0.1f);
 }
 
 

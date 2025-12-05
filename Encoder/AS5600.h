@@ -30,7 +30,7 @@ typedef struct {
     float velocity;          // 角速度(deg/s)
     float accel;             // 角加速度(deg/s^2)
     u32 time_prev;          // 上一时间(100us)
-    LowPassFilter velocity_lpf; // 速度低通滤波
+    LowPassFilter_t velocity_lpf; // 速度低通滤波
     BOOL initialized;        // 是否首次运行
 } Encoder_Velocity_t;
 
@@ -41,7 +41,7 @@ typedef struct {
     float velocity;          // 角速度(deg/s)
     float accel;             // 角加速度(deg/s^2)
     u32 time_prev;          // 上一时间(100us)
-    LowPassFilter velocity_lpf; // 速度低通滤波
+    LowPassFilter_t velocity_lpf; // 速度低通滤波
     BOOL initialized;        // 是否首次运行
 } Encoder_Velocity_Sin_Cos_t;
 
