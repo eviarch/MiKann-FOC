@@ -21,6 +21,6 @@ void Ratchet_Simulation_Init(void);
 void Ratchet_Simulation_Update(s8 direction, u8 notch_number);
 
 void Damp_Simulation_Init(void);
-void Damp_Simulation_Update(void);
+void Damp_Simulation_Update(s8 direction);
 
 #endif

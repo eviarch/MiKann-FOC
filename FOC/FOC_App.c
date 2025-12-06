@@ -39,5 +39,5 @@ void FOC_Task(void)
 	// velocityControl_loop(1000.0f);
 
     // Ratchet_Simulation_Update(1, 6);    // 低通不能给太狠了，微分项要起到消除震荡作用
-    Damp_Simulation_Update();
+    Damp_Simulation_Update(-1);
 }

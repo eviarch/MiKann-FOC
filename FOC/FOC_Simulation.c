@@ -80,16 +80,15 @@ void Ratchet_Simulation_Update(s8 direction, u8 notch_number)
     {
         case 0:
             angleControl_loop(r.nearest_bound);     //  顺时针和逆时针均可转动并形成挡位
-        break;
+            break;
 
         case 1:
             
-        
-        break;
+            break;
 
         case -1:
 
-        break;
+            break;
         
         default:
             break;
@@ -101,7 +100,7 @@ void Damp_Simulation_Init(void)
 	LowPassFilter_Init(&velocityControl_loop_filter, 1.0f);
     PosPID_Init(
         &velocityControl_loop_pid, 
-        0.001f,
+        0.01f,
         0.0f / 5000.0f,
         0.0f,
         5000.0f, 15.0f,
@@ -110,8 +109,44 @@ void Damp_Simulation_Init(void)
     );
 }
 
-void Damp_Simulation_Update(void)
-{
-    velocityControl_loop(0.3f * encoder_velocity_sc.velocity);  
 
+
+//  1：顺时针转动阻力
+//  2：逆时针转动阻力
+#define DAMP_INTENSITY        0.1f  // 阻力强度，数值越小阻力越大
+#define VELOCITY_ENABLE     100.0f  // 速度使能，在一定速度以上才形成阻力
+                                    // 只用输入正速度，在逆时针时已经加上负号了 
+void Damp_Simulation_Update(s8 direction)
+{
+    switch (direction)
+    {
+        case 0:
+            velocityControl_loop(DAMP_INTENSITY * encoder_velocity_sc.velocity);  
+            break;
+        
+        case 1:
+            if (encoder_velocity_sc.velocity > VELOCITY_ENABLE)
+            {
+                velocityControl_loop(DAMP_INTENSITY * encoder_velocity_sc.velocity);
+            }
+            else
+            {
+                velocityControl_loop(0.95f * encoder_velocity_sc.velocity);     // 给0.95是怕速度跑飞了
+            }
+            break;
+
+        case -1:
+            if (encoder_velocity_sc.velocity < - VELOCITY_ENABLE)
+            {
+                velocityControl_loop(DAMP_INTENSITY * encoder_velocity_sc.velocity);
+            }
+            else
+            {
+                velocityControl_loop(0.95f * encoder_velocity_sc.velocity);     // 给0.95是怕速度跑飞了
+            }
+            break;
+
+        default:
+            break;
+    }
 }
