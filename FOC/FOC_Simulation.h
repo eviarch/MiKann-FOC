@@ -5,8 +5,6 @@
 #include "FOC_Util.h"
 
 
-
-
 typedef struct {
     int region_id;        // 落在哪个区域
     float lower_bound;    // 区域下边界

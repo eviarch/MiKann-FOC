@@ -20,7 +20,6 @@ void Set_PWM_Frequency(TIM_HandleTypeDef *htim, u32 freq)
 }
 
 
-
 RatchetRegionInfo_t getRatchetRegion(float angle, int n_sections)
 {
     RatchetRegionInfo_t info;
