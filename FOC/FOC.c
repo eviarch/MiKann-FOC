@@ -5,6 +5,8 @@
 #include "task.h"
 #include "AS5600.h"
 #include "PosPID.h"
+#include "FOC_Simulation.h"
+#include "tim.h"
 
 volatile float zero_electric_angle = 0.0f;
 
@@ -81,8 +83,9 @@ void FOC_Init(void)
 // 这里放FOC控制代码
 void FOC_Task(void)
 {
-	// velocityOpenloop(600.0f);  // 速度开环测试，10度每秒 
-	angleControl_loop(45.0f);  // 位置闭环测试，目标位置45度
+	// Set_PWM_Frequency(&htim1, 1000);
+	// velocityOpenloop(10.0f);  // 速度开环测试，10度每秒 
+	// angleControl_loop(45.0f);  // 位置闭环测试，目标位置45度
 	// setTorque(VOLTAGE_POWER_SUPPLY / 2, _3PI_2);
 	// velocityControl_loop(1000.0f);
 }
