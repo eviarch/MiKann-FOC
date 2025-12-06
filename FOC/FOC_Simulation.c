@@ -1,6 +1,8 @@
 
 #include "FOC_Simulation.h"
 #include "FOC_Math.h"
+#include "FOC.h"
+#include "AS5600.h"
 
 
 void Set_PWM_Frequency(TIM_HandleTypeDef *htim, u32 freq)
@@ -18,3 +20,98 @@ void Set_PWM_Frequency(TIM_HandleTypeDef *htim, u32 freq)
 }
 
 
+
+RatchetRegionInfo_t getRatchetRegion(float angle, int n_sections)
+{
+    RatchetRegionInfo_t info;
+
+    // 1. 归一化角度 0~360
+    while (angle < 0) angle += 360.0f;
+    while (angle >= 360.0f) angle -= 360.0f;
+
+    // 2. 每个区域宽度
+    float step = 360.0f / n_sections;
+
+    // 3. 属于第几个区域
+    int region = (int)(angle / step);
+
+    // 4. 区域上下边界
+    float lower = region * step;
+    float upper = lower + step;
+
+    // 5. 判断最近边界
+    float d_lower = angle - lower;
+    float d_upper = upper - angle;
+
+    float nearest;
+    if (d_lower <= d_upper)
+        nearest = lower;
+    else
+        nearest = upper;
+
+    // 写回结构体
+    info.region_id    = region;
+    info.lower_bound  = lower;
+    info.upper_bound  = upper;
+    info.nearest_bound = nearest;
+
+    return info;
+}
+
+void Ratchet_Simulation_Init(void)
+{
+    LowPassFilter_Init(&angleControl_loop_filter, 0.8f);
+    PosPID_Init(
+        &angleControl_loop_pid, 
+        0.1f,
+        0.1f / 5000.0f,
+        0.01f,
+        5000.0f, 15.0f,
+        2.0f,
+        VOLTAGE_POWER_SUPPLY/2
+    );
+}
+
+void Ratchet_Simulation_Update(s8 direction, u8 notch_number)
+{
+    RatchetRegionInfo_t r;
+    r = getRatchetRegion(encoder_degree, notch_number);
+    switch (direction)
+    {
+        case 0:
+            angleControl_loop(r.nearest_bound);     //  顺时针和逆时针均可转动并形成挡位
+        break;
+
+        case 1:
+            
+        
+        break;
+
+        case -1:
+
+        break;
+        
+        default:
+            break;
+    }
+}
+
+void Damp_Simulation_Init(void)
+{
+	LowPassFilter_Init(&velocityControl_loop_filter, 1.0f);
+    PosPID_Init(
+        &velocityControl_loop_pid, 
+        0.001f,
+        0.0f / 5000.0f,
+        0.0f,
+        5000.0f, 15.0f,
+        2.0f,
+        VOLTAGE_POWER_SUPPLY/2
+    );
+}
+
+void Damp_Simulation_Update(void)
+{
+    velocityControl_loop(0.3f * encoder_velocity_sc.velocity);  
+
+}

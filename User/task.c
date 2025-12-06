@@ -3,7 +3,7 @@
 #include "AS5600.h"
 #include "Display.h"
 #include "Communication.h"
-#include "FOC.h"
+#include "FOC_App.h"
 #include "key_SL.h"
 
 

@@ -87,7 +87,8 @@ float _sqrtApprox(float number)
 
 
 /***********************LowPassFilter*************************/
-void LowPassFilter_Init(LowPassFilter_t *f, float alpha)
+// alpha = 1, 失能低通滤波
+void LowPassFilter_Init(LowPassFilter_t *f, float alpha)        
 {
     f->y_prev = 0.0f;
     alpha = (alpha > 1) ? 1 : (alpha < 0 ? 0 : alpha);
