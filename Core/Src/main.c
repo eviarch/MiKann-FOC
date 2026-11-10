@@ -97,8 +97,10 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  /* TIM2 以 10 kHz 产生任务调度节拍。 */
   HAL_TIM_Base_Start_IT(&htim2);
   
+  /* TIM1 三路通道输出电机三相 PWM。 */
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
@@ -106,6 +108,7 @@ int main(void)
   // 设置占空比
   // htim1.Instance->CCR1 = 0;
 
+  /* 初始化 OLED 和默认位置控制器。 */
   Task_Init();
   /* USER CODE END 2 */
 
@@ -113,6 +116,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    /* 每个 TIM2 节拍执行一次任务扫描，具体任务按各自周期到期。 */
     if (GET_TaskExeFlag())
     {
         CLR_TaskExeFlag();

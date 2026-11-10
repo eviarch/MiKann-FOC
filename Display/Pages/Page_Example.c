@@ -10,18 +10,25 @@
  */
 #include "Page_Example.h"
 
+/**
+ * @file Page_Example.c
+ * @brief 演示新页面应实现的最小函数集合。
+ */
 
+/* 静态衬底在进入页面或切换菜单时绘制一次。 */
 void Page_Example_Subtrate(void)
 {
     OLED_ShowString(1, 1, "Example");
 }
 
+/* 周期刷新函数可在每个显示周期更新数值、图标或选中状态。 */
 void Page_Example_Task(void)
 {
     ;
 }
 
 
+/* 以下三个回调分别对应短按、长按和双击预留动作。 */
 void Page_Example_Key_ShortPress(void)
 {
     ;

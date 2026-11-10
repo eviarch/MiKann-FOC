@@ -42,6 +42,7 @@ void MX_ADC1_Init(void)
 
   /** Common config
   */
+  /* ADC1 使用软件触发、单次转换，仅采集 AS5600 的模拟角度输出。 */
   hadc1.Instance = ADC1;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
@@ -56,6 +57,7 @@ void MX_ADC1_Init(void)
 
   /** Configure Regular Channel
   */
+  /* PA7 对应 ADC1_IN7。 */
   sConfig.Channel = ADC_CHANNEL_7;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;

@@ -11,11 +11,20 @@
 #ifndef __PID_H
 #define __PID_H
 
+/**
+ * @file PosPID.h
+ * @brief 固定采样周期下使用的 PID、PI、PD 控制器。
+ *
+ * 微分项直接使用相邻误差差值和控制器系数，不额外除以采样时间；
+ * 因此同一组参数只适用于对应的控制周期。
+ */
+
 #include "FOC_Math.h"
 
 /*------------------------------------------- PID ------------------------------------------*/
 
 // 位置式 PID
+/* 控制器同时保存误差历史、积分状态、限幅参数和最近一次输出。 */
 typedef struct PosPID_t {
     float e;            // 误差
     float e_last;       // 上次误差
@@ -33,14 +42,26 @@ typedef struct PosPID_t {
     float u;            // 输出
 } PosPID_t;
 
+/**
+ * @brief 初始化位置式 PID 的内部状态和控制参数。
+ */
 void PosPID_Init(PosPID_t *pid, float kp, float ki, float kd, float intMax, float intDis, float DeMax, float uMax);
+
+/**
+ * @brief 输入当前误差并更新控制器输出 u。
+ */
 void PosPID_Update(PosPID_t *pid, float ek);
+
+/**
+ * @brief 清除误差、积分和上次误差，同时保留控制器参数。
+ */
 void PosPID_Clear(PosPID_t *pid);
 
 
 /*------------------------------------------- PI ------------------------------------------*/
 
 // 位置式 PI
+/* PI 不保存微分历史，适用于速度环等需要较少状态的控制场景。 */
 typedef struct PosPI_t {
     float e;            // 误差
     float e_int;        // 误差积分
@@ -63,6 +84,7 @@ void PosPI_Clear(PosPI_t *pi);
 /*------------------------------------------- PD ------------------------------------------*/
 
 // 微分先行的位置式 PD
+/* PD 不使用积分项，适合不希望累积稳态误差的场景。 */
 typedef struct PosPD_t {
     float e;            // 误差
     float e_last;       // 上次误差

@@ -28,6 +28,7 @@ UART_HandleTypeDef huart2;
 
 /* USART2 init function */
 
+/* USART2 使用 PA2/PA3，配置为 115200 bps、8 数据位、无校验、1 停止位。 */
 void MX_USART2_UART_Init(void)
 {
 

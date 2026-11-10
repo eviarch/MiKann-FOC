@@ -27,6 +27,7 @@
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
+/* I2C1：PB6/PB7，连接 128×64 OLED，400 kHz 快速模式。 */
 /* I2C1 init function */
 void MX_I2C1_Init(void)
 {
@@ -56,6 +57,8 @@ void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 2 */
 
 }
+
+/* I2C2：PB10/PB11，保留给 AS5600 I2C 读取，400 kHz 快速模式。 */
 /* I2C2 init function */
 void MX_I2C2_Init(void)
 {

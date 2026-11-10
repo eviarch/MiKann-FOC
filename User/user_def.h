@@ -22,14 +22,18 @@
 
 /*-------------------------------- Defines & Typedefs -------------------------------*/
 
+/* 工程内部使用的短整型别名，统一控制模块的整数宽度。 */
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef int8_t s8;
 typedef int16_t s16;
 typedef int32_t s32;
+
+/* 布尔值沿用 u8，避免引入额外类型。 */
 typedef u8 BOOL;
 
+/* 位带和普通 GPIO 逻辑值。 */
 #define Bit_RESET       ((u32)(0))
 #define Bit_SET         ((u32)(1))
 
@@ -47,6 +51,7 @@ typedef u8 BOOL;
 #define FAILED          ((u8)1)
 #endif
 
+/* 显式标记未使用参数，避免编译器警告。 */
 #define USER_UNUSED(x)  (void)(x)
 
 

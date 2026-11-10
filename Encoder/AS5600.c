@@ -2,6 +2,14 @@
 #include "AS5600.h"
 #include "task.h"
 
+/**
+ * @file AS5600.c
+ * @brief AS5600 角度采集、圈数累计和速度估计实现。
+ *
+ * 默认调用链为：
+ *   AS5600_Update() -> ADC 采样 -> 角度换算 -> Turns_Count_Update()
+ * 角速度由独立的 Velocity_SinCos_Update() 周期任务计算。
+ */
 
 #ifndef FLT_MAX
 #define FLT_MAX         3.402823466e+38F
@@ -25,7 +33,9 @@ Encoder_Velocity_Sin_Cos_t encoder_velocity_sc = {0};
 
 /**
  * @brief 读取AS5600的原始角度值
- * @return 12位原始角度值(0-4095), 0xFFFF表示读取失败
+ *
+ * 读取结果写入 raw_angle。该函数未检查 HAL 返回值，调用方仍需关注
+ * I2C 通信失败时的数据有效性。
  */
 void AS5600_ReadRawAngle_I2C(void)
 {
@@ -43,6 +53,13 @@ void AS5600_ReadRawAngle_I2C(void)
 #define AS5600_MIN_PERCENT   0.04f
 #define AS5600_MAX_PERCENT   0.96f
 
+/**
+ * @brief 启动一次 ADC 转换并读取 AS5600 模拟角度。
+ *
+ * @param hadc 已初始化的 ADC 句柄。
+ *
+ * 当前配置为软件触发、单次转换。轮询超时参数为 1 ms。
+ */
 void AS5600_ReadRawAngle_ADC(ADC_HandleTypeDef *hadc)
 {
     // 启动 ADC
@@ -77,6 +94,10 @@ float AS5600_RawAngleToDegree(u16 raw_angle)
 
 //  自带了初始化判断, 只做了速度低通滤波
 //  传统方法求解角速度
+/*
+ * 先用 Lim_Ang_180() 将角度差限制在 -180°~180°，再除以两次采样的
+ * 时间间隔。低于 0.2° 的变化被视为静止噪声。
+ */
 void Velocity_Calculate_Update(void)
 {
     float angle_diff;
@@ -120,6 +141,10 @@ void Velocity_Calculate_Update(void)
 
 //  自带了初始化判断, 不做速度低通滤波
 //  sin/cos 微分速度估计器
+/*
+ * 设机械角为 θ，则 dθ/dt = cos(θ)·dsin(θ)/dt - sin(θ)·dcos(θ)/dt。
+ * 本函数利用该恒等式计算速度，并按 VELOC_SC_LOW_PASS 做一阶滤波。
+ */
 #define VELOC_SC_LOW_PASS   0.6
 void Velocity_SinCos_Update(void)
 {
@@ -172,6 +197,11 @@ void Velocity_SinCos_Update(void)
 /*********************圈数计算*************************/
 
 // 自带了初始化判断
+/*
+ * 相邻采样差超过 ±270° 时认为不是真实高速运动，而是跨过了 0° 边界：
+ *   359° -> 0° 表示反向跨零；
+ *   0° -> 359° 表示正向跨零。
+ */
 void Turns_Count_Update(void)
 {
     if (!encoder_turns.initialized)     // 初始化语句
@@ -215,12 +245,24 @@ void Turns_Count_Update(void)
 
 /*********************任务更新*************************/
 
+/**
+ * @brief AS5600 模块的空初始化入口。
+ *
+ * ADC 和 I2C 外设由 CubeMX 生成的初始化函数完成，这里保留接口以便
+ * 后续加入校准参数或启动自检。
+ */
 void AS5600_Init(void)
 {
     ;
 }
 
 
+/**
+ * @brief 编码器主采样任务。
+ *
+ * 当前使用 ADC 模拟输出。读取后立即换算为机械角并更新圈数；
+ * I2C 读取和传统测速路径保留在附近，便于切换实验方案。
+ */
 void AS5600_Update(void)
 {
     // AS5600_ReadRawAngle_I2C();

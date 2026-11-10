@@ -2,6 +2,11 @@
 #include "FOC_Math.h"
 #include <math.h>
 
+/**
+ * @file FOC_Math.c
+ * @brief 基于查表和一阶滤波器的轻量数学实现。
+ */
+
 // 正弦查表数组（0~π/2），*10000 放大
 const int sine_array[200] = {
     0, 79, 158, 237, 316, 395, 473, 552, 631, 710, 789, 867, 946, 1024, 1103, 1181,
@@ -23,12 +28,20 @@ const int sine_array[200] = {
 };
 
 // 四舍五入函数（整数）
+/*
+ * 采用加 0.5 后截断的方式，分别处理正数和负数，避免直接截断
+ * 造成向零方向偏置。
+ */
 static inline int round_int(float x)
 {
     return (x > 0.0f) ? (int)(x + 0.5f) : (int)(x - 0.5f);
 }
 
 // 查表正弦函数（弧度），输入 0~2PI
+/*
+ * 利用 sin(π-x)=sin(x)、sin(π+x)=-sin(x) 和周期性，把四个象限
+ * 映射到 0~π/2 的查表区间。调用方应先保证输入处于 0~2π。
+ */
 float _sin(float a)
 {
     if (a < _PI_2)
@@ -50,6 +63,7 @@ float _sin(float a)
 }
 
 // 查表余弦函数（弧度）
+/* 利用 cos(a)=sin(a+π/2)，并在越过 2π 时回绕。 */
 float _cos(float a)
 {
     float a_sin = a + _PI_2;
@@ -66,12 +80,17 @@ float _normalizeAngle(float angle)
 }
 
 // 机械角 -> 电角
+/* 电角度（rad）= 机械角（rad） * 极对数。 */
 float _electricalAngle(float shaft_angle, int pole_pairs)
 {
     return shaft_angle * pole_pairs;
 }
 
 // 快速平方根
+/*
+ * 先使用 Quake III 的快速逆平方根初值，再乘以输入值得到平方根。
+ * 这里没有继续执行 Newton-Raphson 迭代，因此结果是近似值。
+ */
 float _sqrtApprox(float number)
 {
     long i;
@@ -96,6 +115,7 @@ void LowPassFilter_Init(LowPassFilter_t *f, float alpha)
 }
 
 // 低通滤波执行函数
+/* alpha 越大越跟随当前输入，alpha 越小平滑作用越强。 */
 void LowPassFilter(LowPassFilter_t *f, float x)
 {
     float y;

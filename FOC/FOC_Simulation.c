@@ -4,7 +4,19 @@
 #include "FOC.h"
 #include "AS5600.h"
 
+/**
+ * @file FOC_Simulation.c
+ * @brief 棘轮挡位和阻尼手感的实验实现。
+ *
+ * 两种模式都通过现有位置或速度控制器生成电压参考，尚未接入独立
+ * 的力反馈传感器或电流环。
+ */
 
+/*
+ * 根据目标频率反算 ARR=0 时的自动重装值：
+ *   f = timer_clk / ((PSC + 1) * (ARR + 1))
+ * 该函数直接修改寄存器，不会处理除零或超出计数器范围的目标频率。
+ */
 void Set_PWM_Frequency(TIM_HandleTypeDef *htim, u32 freq)
 {
     u32 timer_clk = HAL_RCC_GetPCLK2Freq();  // 例如 TIM1/TIM8
@@ -20,6 +32,10 @@ void Set_PWM_Frequency(TIM_HandleTypeDef *htim, u32 freq)
 }
 
 
+/*
+ * 把圆周均分为 n_sections 个区域，返回当前区域及距离当前角度
+ * 最近的区域边界。边界值作为位置闭环目标，即可形成吸附挡位。
+ */
 RatchetRegionInfo_t getRatchetRegion(float angle, int n_sections)
 {
     RatchetRegionInfo_t info;
@@ -57,6 +73,9 @@ RatchetRegionInfo_t getRatchetRegion(float angle, int n_sections)
     return info;
 }
 
+/*
+ * 棘轮模式沿用位置环，但将低通系数调整为 0.8，使输出响应更快。
+ */
 void Ratchet_Simulation_Init(void)
 {
     LowPassFilter_Init(&angleControl_loop_filter, 0.8f);
@@ -71,6 +90,10 @@ void Ratchet_Simulation_Init(void)
     );
 }
 
+/*
+ * direction=0 时直接使用最近边界作为目标；direction=1/-1 的单向
+ * 挡位策略尚未实现，目前保留空分支。
+ */
 void Ratchet_Simulation_Update(s8 direction, u8 notch_number)
 {
     RatchetRegionInfo_t r;
@@ -94,6 +117,9 @@ void Ratchet_Simulation_Update(s8 direction, u8 notch_number)
     }
 }
 
+/*
+ * 阻尼模式使用速度环，比例系数较低，避免速度反馈噪声引起明显抖动。
+ */
 void Damp_Simulation_Init(void)
 {
 	LowPassFilter_Init(&velocityControl_loop_filter, 1.0f);
@@ -112,9 +138,14 @@ void Damp_Simulation_Init(void)
 
 //  1：顺时针转动阻力
 //  2：逆时针转动阻力
+/* 目标速度与实测速度同向时，形成阻碍当前运动的控制输出。 */
 #define DAMP_INTENSITY        0.1f  // 阻力强度，数值越小阻力越大
 #define VELOCITY_ENABLE     100.0f  // 速度使能，在一定速度以上才形成阻力
                                     // 只用输入正速度，在逆时针时已经加上负号了 
+/*
+ * 双向模式把速度乘以 DAMP_INTENSITY 后作为速度环目标；单向模式只在
+ * 超过阈值时形成阻尼，低速时使用接近速度的反馈目标保持平稳。
+ */
 void Damp_Simulation_Update(s8 direction)
 {
     switch (direction)

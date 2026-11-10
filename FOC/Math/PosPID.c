@@ -10,6 +10,10 @@
  */
 #include "PosPID.h"
 
+/**
+ * @file PosPID.c
+ * @brief 位置式 PID、PI、PD 更新实现。
+ */
 
 /*------------------------------------------- PID ------------------------------------------*/
 
@@ -47,6 +51,9 @@ void PosPID_Init(PosPID_t *pid, float kp, float ki, float kd, float intMax, floa
  * @brief 位置式 PID 更新。
  * 
  * @param pid PID 结构体变量
+ *
+ * 误差绝对值超过 e_int_dis 时暂停积分；否则累加误差并做积分限幅。
+ * 微分项取相邻两次误差的差值并做限幅，最终输出同样执行绝对值限幅。
  */
 void PosPID_Update(PosPID_t *pid, float ek)
 {
@@ -71,7 +78,7 @@ void PosPID_Update(PosPID_t *pid, float ek)
 
 
 /**
- * @brief Clear internal data to reset the pid controller.
+ * @brief 清除 PID 的误差和积分状态，保留 Kp/Ki/Kd 与限幅参数。
  * 
  * @param pid The pid controller
  */
@@ -111,6 +118,8 @@ void PosPD_Init(PosPD_t *pd, float kp, float kd, float DeMax, float uMax)
  * @brief 位置式 PD 更新。
  * 
  * @param pd PD 结构体变量
+ *
+ * PD 不维护积分状态，仅由比例项和受限误差差分组成。
  */
 void PosPD_Update(PosPD_t *pd, float ek)
 {
@@ -127,7 +136,7 @@ void PosPD_Update(PosPD_t *pd, float ek)
 
 
 /**
- * @brief Clear internal data to reset the pd controller.
+ * @brief 清除 PD 的误差历史并保留控制器参数。
  * 
  * @param pd The pid controller
  */
@@ -168,7 +177,9 @@ void PosPI_Init(PosPI_t *pi, float kp, float ki, float intMax, float intDis, flo
  * @brief 位置式 PI 更新。
  * 
  * @param pi PI 结构体变量
- * @param delta_e 微分项，为了微分先行而设计的
+ * @param ek 当前控制误差。
+ *
+ * 与 PID 相同，误差过大时暂停积分；输出由比例项和受限积分项组成。
  */
 void PosPI_Update(PosPI_t *pi, float ek)
 {
@@ -187,7 +198,7 @@ void PosPI_Update(PosPI_t *pi, float ek)
 
 
 /**
- * @brief Clear internal data to reset the pi controller.
+ * @brief 清除 PI 的误差和积分状态，保留控制器参数。
  * 
  * @param pi The pi controller
  */

@@ -2,6 +2,13 @@
 #include "Font_EN.h"
 #include "Font_CN.h"
 
+/**
+ * @file OLED.c
+ * @brief OLED 显存绘制和 SSD1306/SSD1315 初始化序列。
+ *
+ * 页面绘制函数只修改 RAM 显存；OLED_Refresh() 才通过 I2C 发送整屏。
+ */
+
 /*---------------------------------------- Constants -----------------------------------------*/
 
 #define OLED_CONTROLBYTE_CMD_STREAM     (0x00) // 多字节命令 0000 0000b
@@ -20,6 +27,10 @@ void OLED_Refresh(void);
 
 /*---------------------------------------- Library ---------------------------------------------*/
 
+/*
+ * 初始化控制器、设置寻址范围和电荷泵，最后打开显示。
+ * 初始化序列通过阻塞式 I2C 写入，避免首次刷新与配置命令重叠。
+ */
 void OLED_Init(void)
 {
     uint8_t init[] =
@@ -70,12 +81,14 @@ void OLED_Init(void)
     OLED_IsInit = TRUE;
 }
 
+/* 将 1024 字节显存作为一块数据发送到 OLED。 */
 void OLED_Refresh(void)
 {
     HAL_I2C_Mem_Write_IT(&hi2c1, OLED_ADDR, OLED_CONTROLBYTE_DATA, I2C_MEMADD_SIZE_8BIT, OLED_DispGraph, OLED_DISPGRAPH_SIZE);
 }
 
 
+/* 仅清空本地显存，实际显示内容在下一次刷新时更新。 */
 void OLED_Clear(void)
 {
     memset(OLED_DispGraph, 0x00, OLED_DISPGRAPH_SIZE);
@@ -83,6 +96,10 @@ void OLED_Clear(void)
 
 /*---------------------------------------- Char & String ---------------------------------------*/
 
+/*
+ * 输入行号从 1 开始，列号也按宏接口使用；函数内部转换为显存坐标。
+ * ASCII 字形按 8×16 像素拆成上下两个 8 像素高的页。
+ */
 void OLED_ShowChar(uint8_t row, uint8_t col, char ch)
 {
     uint8_t i;
@@ -97,6 +114,7 @@ void OLED_ShowChar(uint8_t row, uint8_t col, char ch)
         OLED_DispGraph[(2 * row + 1) * OLED_WIDTH + col * COL_STEP + i] = ascii_1608[(uint8_t)ch][i + 8];
 }
 
+/* 逐字符绘制，行尾自动换行，超出屏幕底部时停止。 */
 void OLED_ShowString(uint8_t row, uint8_t col, const char* str)
 {
     if (!str) return;
@@ -118,6 +136,7 @@ void OLED_ShowString(uint8_t row, uint8_t col, const char* str)
 
 /*---------------------------------------- Icons ----------------------------------------------*/
 
+/* 16×16 图标占用两页，每页复制 16 字节。 */
 void OLED_ShowIcon16(uint8_t row, uint8_t col, const uint8_t icon16[32])
 {
     if (!icon16) return;
@@ -198,6 +217,9 @@ void OLED_ShowCnString32(uint8_t row, uint8_t col, char* CnString)
 
 /*---------------------------------------- Numbers ---------------------------------------------*/
 
+/*
+ * 从最低位向前生成十进制数字；左侧未使用的位按照 fill 参数补空格或 0。
+ */
 void OLED_ShowNum(uint8_t row, uint8_t col, int32_t num, uint8_t len, fill_t fill)
 {
     if (--row > 3 || --col > 15 || len > 16) return;

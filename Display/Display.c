@@ -6,14 +6,13 @@
  * 
  * @note  需要配置(STM32)：
  *        1. 使能 I2C。
- *        2. 使能 I2C Tx DMA。
- *        3. 需要开启 I2C Event Interrupt 和 DMA Stream Interrupt。
- *           （不知道为什么需要开启 I2C Event Interrupt，明明是 DMA 产生中断）
+ *        2. 当前 OLED 驱动使用 HAL I2C 中断发送，并非 DMA。
+ *        3. 需要开启 I2C Event Interrupt 和 Error Interrupt。
  * 
  *        Display 使用：
  *        1. 在 OLED.c 中修改一些底层操作。
  *        2. 调用 Display_Init 传入 I2C 句柄。
- *        3. 在 task.c 中添加 Display_Task，周期设置为 100 ms（或者大于 OLED 数据一次传输的时间均可）。
+ *        3. 在 task.c 中添加 Display_Task，当前周期为 10 ms。
  *        4. 如果编写了页面，将每个页面的 Subtrate 和 Task 都分别添加到本文件的 Display_Subtrate
  *           和 Display_Task 中。
  * 
@@ -23,6 +22,10 @@
  */
 #include "Display.h"
 
+/**
+ * @file Display.c
+ * @brief 页面分发和 OLED 刷新调度。
+ */
 
 Page_enum ShowState = PAGE_Main;    // 当前显示页面，初始化给主页面
 
@@ -49,7 +52,8 @@ void Display_Subtrate(void)
 
 /**
  * @brief 显示任务，建议每 100 ms 执行一次。
- * 
+ *
+ * 当前任务表配置为 10 ms。每次先更新页面动态内容，再把整块显存提交给 OLED。
  */
 void Display_Task(void)
 {
@@ -68,8 +72,6 @@ void Display_Task(void)
 
 /**
  * @brief 显示模块初始化，在工程初始化时执行。
- * 
- * @param hi2c 
  */
 void Display_Init(void)
 {

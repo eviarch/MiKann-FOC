@@ -13,6 +13,10 @@
 #include "FOC.h"
 #include "key_SL.h"
 
+/**
+ * @file Page_Main.c
+ * @brief 主页测量值显示和按键动作。
+ */
 
 // 主页面中的功能选择指针。0 - 当前显示封面。
 // >0 : 表示指向 ShowState 中的具体功能。每一个功能都对应一个页面。
@@ -25,7 +29,8 @@ u8 display_num = 0;
 
 /**
  * @brief 主页面显示的衬底
- * 
+ *
+ * Page_Main_Ptr 为 0 时显示编码器信息栏；为 1~4 时显示菜单占位。
  */
 void Page_Main_Subtrate(void)
 {
@@ -55,7 +60,8 @@ void Page_Main_Subtrate(void)
 
 /**
  * @brief 主页面刷新的信息
- * 
+ *
+ * 左侧文本由静态衬底绘制，这里只更新数值区域，减少每帧字符重绘量。
  */
 void Page_Main_Task(void)
 {
@@ -76,7 +82,9 @@ void Page_Main_Task(void)
 
 /**
  * @brief 主页面下按键短按的反应。
- * 
+ *
+ * 注意：Zero_Electric_Init() 会施加电压并阻塞约 1 s，调用前应确保
+ * 电机可以自由转动且动力级接线正确。
  */
 void Page_Main_Key_ShortPress(void)
 {
@@ -86,7 +94,8 @@ void Page_Main_Key_ShortPress(void)
 
 /**
  * @brief 主页面下按键长按的反应。
- * 
+ *
+ * 保留为空，供后续菜单或参数编辑功能使用。
  */
 void Page_Main_Key_LongPress(void)
 {
@@ -95,7 +104,8 @@ void Page_Main_Key_LongPress(void)
 
 /**
  * @brief 主页面下按键双击的反应。
- * 
+ *
+ * 当前按键驱动未产生双击事件，此接口仅预留。
  */
 void Page_Main_Key_DoublePress(void)
 {

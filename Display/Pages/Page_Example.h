@@ -11,11 +11,18 @@
 #ifndef __PAGE_Example_H
 #define __PAGE_Example_H
 
+/**
+ * @file Page_Example.h
+ * @brief 新页面实现的模板接口。
+ */
+
 #include "Display.h"
 
+/* 页面切换和周期刷新时调用的显示函数。 */
 void Page_Example_Subtrate(void);
 void Page_Example_Task(void);
 
+/* 页面激活时由按键模块调用的动作函数。 */
 void Page_Example_Key_ShortPress(void);
 void Page_Example_Key_LongPress(void);
 void Page_Example_Key_DoublePress(void);

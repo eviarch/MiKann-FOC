@@ -2,6 +2,13 @@
 #ifndef FOC_UTILS_H
 #define FOC_UTILS_H
 
+/**
+ * @file FOC_Math.h
+ * @brief FOC 使用的角度、三角函数、平方根和低通滤波工具。
+ *
+ * 电机角度同时存在度和弧度两种表示；调用数学函数前应确认输入范围。
+ */
+
 #include <stdint.h>
 #include <math.h>
 #include "user_def.h"
@@ -41,6 +48,7 @@
 #define Get_Angle(x2, y2, x1, y1)	(RAD_TO_DEG(atan2((y2) - (y1), (x2) - (x1))))
 
 
+/* 0~π/2 范围内的正弦查表，表值已放大 10000 倍。 */
 extern const int sine_array[200];
 #define SINETABLE_LEN               (sizeof(sine_array) / sizeof(int))
 
@@ -77,20 +85,23 @@ extern const int sine_array[200];
 #define _ACTIVE         1
 
 
+/* dq 坐标系下的电流，d 轴通常用于励磁，q 轴通常用于力矩。 */
 typedef struct {
-    float d;
-    float q;
+    float d;    /* d 轴电流。 */
+    float q;    /* q 轴电流。 */
 } DQCurrent_s;
 
+/* dq 坐标系下的电压参考。 */
 typedef struct {
-    float d;
-    float q;
+    float d;    /* d 轴电压。 */
+    float q;    /* q 轴电压。 */
 } DQVoltage_s;
 
+/* 三相电流采样值。 */
 typedef struct {
-    float a;
-    float b;
-    float c;
+    float a;    /* A 相电流。 */
+    float b;    /* B 相电流。 */
+    float c;    /* C 相电流。 */
 } PhaseCurrent_s;
 
 
@@ -123,12 +134,29 @@ float _sqrtApprox(float value);
 
 
 // 低通滤波器结构体
+/*
+ * 一阶离散低通：
+ *   y[k] = alpha * x[k] + (1 - alpha) * y[k - 1]
+ */
 typedef struct {
     float alpha;              // 滤波常数
     float y_prev;          // 上次输出
 } LowPassFilter_t;
 
+/**
+ * @brief 设置滤波系数并清除滤波器历史输出。
+ *
+ * @param f 滤波器状态。
+ * @param alpha 新数据权重，内部限制到 0~1。
+ */
 void LowPassFilter_Init(LowPassFilter_t *f, float alpha);
+
+/**
+ * @brief 输入一个采样值并更新滤波器输出。
+ *
+ * @param f 滤波器状态。
+ * @param x 当前采样值。
+ */
 void LowPassFilter(LowPassFilter_t *f, float x);
 
 
